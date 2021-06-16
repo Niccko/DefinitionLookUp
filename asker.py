@@ -1,5 +1,6 @@
 import sys
 from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QFileDialog
 
 import des
@@ -11,6 +12,9 @@ class ExampleApp(QtWidgets.QMainWindow, des.Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
+        self.setWindowTitle('Definition Lookuper')
+        self.setWindowIcon(QIcon('icon.ico'))
+        self.setFixedSize(self.size())
         self.label.setText('')
         self.currentWord = ''
         self.wb = load_workbook(QFileDialog.getOpenFileName()[0])
