@@ -36,7 +36,11 @@ class ExampleApp(QtWidgets.QMainWindow, des.Ui_MainWindow):
 
     def pick(self):
         self.currInd = randint(1, self.sheet.max_row)
-        word = self.sheet.cell(row=self.currInd, column=1).value
+        cell = self.sheet.cell(row=self.currInd, column=1)
+        while cell.value is None:
+            self.currInd = randint(1, self.sheet.max_row)
+            cell = self.sheet.cell(row=self.currInd, column=1)
+        word = cell.value
         self.label.setText(word)
 
     def show_def(self):
@@ -47,24 +51,31 @@ class ExampleApp(QtWidgets.QMainWindow, des.Ui_MainWindow):
         self.listWidget.clear()
         for cellObj in self.sheet['A1':f'A{self.numWords}']:
             for cell in cellObj:
-                if cell.value[0].upper() == letter:
-                    self.listWidget.addItem(cell.value)
+                if cell.value is not None:
+                    if cell.value[0].upper() == letter:
+                        self.listWidget.addItem(cell.value)
 
     def find(self):
         value = self.listWidget.selectedItems()[0].text()
         for cellObj in self.sheet['A1':f'A{self.numWords}']:
             for cell in cellObj:
-                if value.lower() == cell.value.lower():
-                    self.label.setText(value)
-                    self.currInd = cell.row
-                    self.show_def()
-                    break
+                if cell.value is not None:
+                    if value.lower() == cell.value.lower():
+                        self.label.setText(value)
+                        self.currInd = cell.row
+                        self.show_def()
+                        return True
 
     def changeFile(self):
-        file = QFileDialog.getOpenFileName()
-        self.wb = load_workbook(file[0])
-        self.sheet = self.wb.worksheets[0]
-        self.numWords = self.sheet.max_row
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setNameFilter("Table (*.xlsx)")
+        if dialog.exec_():
+            file_name = dialog.selectedFiles()[0]
+            self.wb = load_workbook(file_name)
+            self.sheet = self.wb.worksheets[0]
+            self.numWords = self.sheet.max_row
+
 
 def main():
     app = QtWidgets.QApplication(sys.argv)
